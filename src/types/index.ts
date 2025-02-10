@@ -8,18 +8,34 @@ export type CardItem  = {
 }
 
 export interface ICardsData {
-    _items: Array<CardItem>
+    items: CardItem[]
 }
 
-export type PaymentMethod = 'offline'|'online'
+export type IOrderForm = IContacts & IPurchase
 
-export interface IOrderForm {
-    payment: PaymentMethod;
+export interface IContacts {
     email: string;
     phone: string;
+}
+
+export interface IPurchase {
+    payment: string;
     address: string;
 }
 
+export interface IOrder extends IOrderForm {
+    items: string[];
+    total: number;
+}
+
+export interface IOrderResult {
+    id: string;
+    total: number;
+}
+
+export type FormErrors = Partial<Record<keyof IOrderForm, string>>;
+
 export interface IBasket {
-    items: CardItem[];
+    goods: string[];
+    total: number;
 }
