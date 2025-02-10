@@ -12,14 +12,14 @@ export class UserData extends Model<IOrderForm>  {
         return {
             payment: this.payment,
             address: this.address,
-          }
+        }
     }
 
     getContsctsData(): IContacts {
         return {
             email: this.email,
             phone: this.phone,
-          }
+        }
     }
     
     getAllUserData(): IOrderForm {
@@ -28,17 +28,17 @@ export class UserData extends Model<IOrderForm>  {
             email: this.email,
             address: this.address,
             phone: this.phone,
-          }
+        }
     }
 
-    clearForm (): void {
+    clearForm(): void {
         this.payment = ""
         this.email = ""
         this.phone = ""
         this.address = ""
     }
 
-    isValidOrder () {
+    isValidOrder(): boolean {
         const errors: typeof this.formErrors = {};
         if (!this.payment) {
             errors.payment = 'Необходимо указать способ оплаты';
@@ -51,9 +51,8 @@ export class UserData extends Model<IOrderForm>  {
         return Object.keys(errors).length === 0;
     }
 
-    isValidContacts () {
+    isValidContacts(): boolean {
         const errors: typeof this.formErrors = {};
- 
         if (!this.email) {
             errors.email = 'Необходимо указать email';
         }
@@ -75,18 +74,8 @@ export class UserData extends Model<IOrderForm>  {
 
     setContactsField(field: keyof IOrderForm, value: string): void {
         this[field] = value;
-
         if (this.isValidContacts()) {
             this.events.emit('contacts:ready', this.getContsctsData());
         }
     }
-
-    /*
-    setOrderField(field: keyof IOrderForm, value: string): void {
-        this[field] = value;
-
-        if (this.isValidContacts() && this.isValidOrder()) {
-            this.events.emit('order:ready', this.getAllUserData());
-        }
-    }*/
 }

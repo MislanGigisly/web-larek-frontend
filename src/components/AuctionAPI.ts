@@ -1,11 +1,9 @@
 import { Api, ApiListResponse } from './base/api';
-import {IOrder, IOrderResult, ICardsData, CardItem} from "../types";
+import {IOrder, IOrderResult, CardItem} from "../types";
 
 export interface IAuctionAPI {
     getLotList: () => Promise<CardItem[]>;
     getLotItem: (id: string) => Promise<CardItem>;
-    //getLotUpdate: (id: string) => Promise<LotUpdate>;
-    //placeBid(id: string, bid: IBid): Promise<LotUpdate>;
     orderLots: (order: IOrder) => Promise<IOrderResult>;
 }
 
@@ -26,12 +24,6 @@ export class AuctionAPI extends Api implements IAuctionAPI {
         );
     }
 
-   /* getLotUpdate(id: string): Promise<LotUpdate> {
-        return this.get(`/lot/${id}/_auction`).then(
-            (data: LotUpdate) => data
-        );
-    }*/
-
     getLotList(): Promise<CardItem[]> {
         return this.get('/product').then((data: ApiListResponse<CardItem>) =>
             data.items.map((item) => ({
@@ -41,16 +33,9 @@ export class AuctionAPI extends Api implements IAuctionAPI {
         );
     }
 
-   /* placeBid(id: string, bid: IBid): Promise<LotUpdate> {
-        return this.post(`/lot/${id}/_bid`, bid).then(
-            (data: ILot) => data
-        );
-    }*/
-
     orderLots(order: IOrder): Promise<IOrderResult> {
         return this.post('/order', order).then(
             (data: IOrderResult) => data
         );
     }
-
 }

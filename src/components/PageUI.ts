@@ -24,7 +24,6 @@ export class PageUI extends Component<IPage> {
         this._basket = ensureElement<HTMLElement>('.header__basket');
 
         this._basket.addEventListener('click', () => {
-            //"тут было bids:open"
             this.events.emit('basket:open');
         });
     }

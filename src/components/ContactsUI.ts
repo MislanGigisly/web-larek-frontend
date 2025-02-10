@@ -1,7 +1,6 @@
 import {Form} from "./common/Form";
 import {IContacts} from "../types";
-import {EventEmitter, IEvents} from "./base/events";
-import {ensureElement} from "../utils/utils";
+import {IEvents} from "./base/events";
 
 export class ContactsUI extends Form<IContacts> {
     constructor(container: HTMLFormElement, events: IEvents) {

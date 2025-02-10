@@ -13,13 +13,10 @@ export class BasketUI extends Component<IBasketView> {
     protected _total: HTMLElement;
     protected _button: HTMLElement;
  
-
     constructor(container: HTMLElement, protected events: EventEmitter) {
         super(container);
-
         this._list = ensureElement<HTMLElement>('.basket__list', this.container);
         this._total = this.container.querySelector('.basket__price');
-        //возможно нужно добавить контекст "this.conteiner"
         this._button = this.container.querySelector('.button');
 
         if (this._button) {
@@ -27,7 +24,6 @@ export class BasketUI extends Component<IBasketView> {
                 events.emit('order:open');
             });
         }
-
         this.items = [];
     }
 

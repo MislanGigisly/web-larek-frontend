@@ -8,22 +8,13 @@ export class CardsData extends Model<ICardsData> {
         return this.items;
     }
 
-   /* getCard (idCards :string[]): CardItem[] {
-         idCards.map((idCard)=>{
-            return this.items.find(card => card.id === idCard)
-
-         });
-    }*/
-
     getCard(idCards :string[]): CardItem[] {
         return this.items
             .filter(item => idCards.includes(item.id))
     }
         
-    setcards (data: CardItem[]) {
+    setcards (data: CardItem[]): void {
         this.items = data;
         this.emitChanges('items:changed');
-    }
-
-   
+    }   
 }

@@ -25,15 +25,15 @@ export class BasketData extends Model<IBasket> {
         this.events.emit('basket:changed')
     }
 
-    getTotal() : number {
+    getTotal(): number {
         return this._total;
     }
 
-    getBasketList (): string[] {
+    getBasketList(): string[] {
         return this._goods;
     }
 
-    getCheckGoods (): boolean {
+    getCheckGoods(): boolean {
         if (this._goods.length > 0) {
             return true;
         } else {

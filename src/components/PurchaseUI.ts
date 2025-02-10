@@ -1,8 +1,6 @@
 import {Form} from "./common/Form";
 import {IPurchase} from "../types";
-import {EventEmitter, IEvents} from "./base/events";
-import {ensureElement} from "../utils/utils";
-import { sortedLastIndexBy } from "lodash";
+import {IEvents} from "./base/events";
 
 export class PurchaseUI extends Form<IPurchase> {
     protected _buttonOnline: HTMLElement;
@@ -21,10 +19,10 @@ export class PurchaseUI extends Form<IPurchase> {
         })
     }
 
-    set address (value: string) {
+    set address(value: string) {
         (this.container.elements.namedItem('address') as HTMLInputElement).value = value;
     }
-    pushButton (button: HTMLElement) {
+    pushButton(button: HTMLElement) {
         if (button === this._buttonOnline) {
             this.setDisabled(this._buttonOnline ,true)
             if ((this._buttonOffline.getAttribute('disabled') != 'null')){
@@ -38,7 +36,7 @@ export class PurchaseUI extends Form<IPurchase> {
         }
     }
 
-    unpushButtons () {
+    unpushButtons() {
         this.setDisabled(this._buttonOffline, false);
         this.setDisabled(this._buttonOnline, false)
     }
