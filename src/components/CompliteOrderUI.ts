@@ -1,5 +1,5 @@
-import {Component} from "../base/Component";
-import {ensureElement} from "../../utils/utils";
+import {Component} from "./base/Component";
+import {ensureElement, formatNumber} from "../utils/utils";
 
 interface ISuccess {
     total: number;
@@ -24,6 +24,6 @@ export class CompliteOrderUI extends Component<ISuccess> {
     }
 
     set total (total: number) {
-        this.setText(this._total, total)
+        this.setText(this._total, formatNumber(total) + ' синапсов')
     }
 }

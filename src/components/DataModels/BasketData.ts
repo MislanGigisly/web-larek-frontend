@@ -9,10 +9,9 @@ export class BasketData extends Model<IBasket> {
     toggleOrderedLot(id: string, isIncluded: boolean, price?: number): void {
         if (isIncluded) {
             this._goods = _.uniq([...this._goods, id]);
-            this._total += price
         } else {
             this._goods = _.without(this._goods, id);
-            this._total -= price
+
         };
         this.events.emit('basket:changed')
     }

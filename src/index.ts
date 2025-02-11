@@ -10,11 +10,11 @@ import {PageUI} from "./components/PageUI";
 import {CardUI} from "./components/CardUI";
 import {cloneTemplate, createElement, ensureElement} from "./utils/utils";
 import {ModalUI} from "./components/common/ModalUI";
-import {BasketUI} from "./components/common/BasketUI";
-import {IOrderForm, ICardsData, CardItem} from "./types";
+import {BasketUI} from "./components/BasketUI";
+import {IOrderForm, ICardsData, CardItem, IPurchase} from "./types";
 import {ContactsUI} from "./components/ContactsUI";
 import {PurchaseUI} from "./components/PurchaseUI";
-import {CompliteOrderUI} from "./components/common/CompliteOrderUI";
+import {CompliteOrderUI} from "./components/CompliteOrderUI";
 
 const events = new EventEmitter();
 const api = new AuctionAPI(CDN_URL, API_URL);
@@ -47,6 +47,16 @@ const basket = new BasketUI(cloneTemplate(basketTemplate), events);
 const order = new PurchaseUI(cloneTemplate(orderTemplate), events);
 const contacts = new ContactsUI (cloneTemplate(contactsTemplate), events);
 
+// Расчет стоимости товара в данный момент времени в корзине
+function getTotal() {
+    let basketTotal = 0 
+    const basketContents = basketModel.getBasketList();
+    cardsModel.getCard(basketContents).map((item)=>{
+        basketTotal += item.price
+    })
+    return basketTotal
+}
+
 // Дальше идет бизнес-логика
 // Поймали событие, сделали что нужно
 
@@ -68,59 +78,39 @@ events.on<ICardsData>('items:changed', () => {
 
 // Открыть выбранную карточку
 events.on('card:select', (item: CardItem) => {
-    const showItem = (item: CardItem) => {
-        const card = new CardUI('card', cloneTemplate(cardPreviewTemplate),{
-            onClick: () => {
-                events.emit('item:added', item);
-                card.button = (!basketModel.getBasketList().includes(item.id))
-                }
-            })
-        card.button = (!basketModel.getBasketList().includes(item.id));
-        if (item.price == null) {
-            card.button = (basketModel.getBasketList().includes(item.id))
-        }
-        modal.render({
-            content: card.render({
-                title: item.title,
-                image: item.image,
-                description: item.description.split("\n"),
-                category: item.category,
-                price: item.price
-            })
-        });
-    };
-
-    if (item) {
-        api.getLotItem(item.id)
-            .then((result) => {
-                item.description = result.description;
-                showItem(item);
-            })
-            .catch((err) => {
-                console.error(err);
-            })
-    } else {
-        modal.close();
+    const card = new CardUI('card', cloneTemplate(cardPreviewTemplate),{
+        onClick: () => {
+            events.emit('item:added', item);
+            card.button = (!basketModel.getBasketList().includes(item.id))
+            }
+        })
+    card.button = (!basketModel.getBasketList().includes(item.id));
+    if (item.price == null) {
+        card.button = (basketModel.getBasketList().includes(item.id))
     }
+    modal.render({
+        content: card.render({
+            title: item.title,
+            image: item.image,
+            description: item.description.split("\n"),
+            category: item.category,
+            price: item.price
+        })
+    });
 });
 
 // Открыть корзину
 events.on('basket:open', () => {
-    basket.selected = basketModel.getBasketList();
     modal.render({
-        content: createElement<HTMLElement>('div', {}, [
-            basket.render()
-        ])
-    });
+        content: basket.render({})    
+    })
 });
 
 //прерисовка корзины при изменении
 events.on('basket:changed',()=>{
-    const basketContents = basketModel.getBasketList();
-    page.counter = basketContents.length;
-    basket.selected = basketContents;
-    basket.total = basketModel.getTotal();
-    basket.items = cardsModel.getCard(basketContents).map((item: CardItem,index)=>{
+    page.counter = basketModel.getBasketList().length;
+    basket.selected = basketModel.getBasketList();
+    basket.items = cardsModel.getCard(basketModel.getBasketList()).map((item: CardItem,index)=>{
         const good = new CardUI('card', cloneTemplate(cardBasketTemplate),{
             onClick:()=> {
                 events.emit('items:removed', item);
@@ -132,65 +122,71 @@ events.on('basket:changed',()=>{
             priority: index +1
         })      
     })
+    basket.total = getTotal()
 })
 
 // Добавление товара в корзину
 events.on('item:added',(item: CardItem) => {
     basketModel.toggleOrderedLot(item.id, true, item.price)
-    basket.total = basketModel.getTotal()
 })
 
 //удаление товара из корзины
 events.on('items:removed', (item: CardItem)=>{
     basketModel.toggleOrderedLot(item.id, !basketModel.getCheckGoods(), item.price);
-    basket.total = basketModel.getTotal()
 })
 
 // Открыть форму заказа
 events.on('order:open', () => {
     modal.render({
         content: order.render({
-            address: '',
+            address: userModel.getOrderData().address,
             valid: false,
             errors: []
         })
     });
 });
 
+events.on<IPurchase>('userData.payment:changed', (obj) => {
+    if (obj.payment === "Online") {
+        order.setbuttonOnline();
+    } else {
+        order.setbuttonOffline();
+    }
+})
+
 // переход от формы заказа к контактам
 events.on('order:submit', () => {
     modal.render({
         content: contacts.render({
-            phone: '',    
-            email: '',
+            phone: userModel.getContsctsData().phone,    
+            email: userModel.getContsctsData().email,
             valid: false,
             errors: []
         })
     });
-
 });
 
 // Отправлена форма заказа
 events.on('contacts:submit', () => {
     const userData = userModel.getAllUserData()
     const orderData = Object.assign(userData,{
-        total: basketModel.getTotal(),
+        total: getTotal(),
         items: basketModel.getBasketList(),
         })
         console.log(orderData)
     api.orderLots(orderData)
         .then((result) => {
+            basketModel.clearBasket();
+            userModel.clearForm();
+            order.unpushButtons();
             const success = new CompliteOrderUI(cloneTemplate(successTemplate), {
                 onClick: () => {
                     modal.close();
-                    basketModel.clearBasket();
-                    userModel.clearForm();
-                    order.unpushButtons();
                 }
             });
             modal.render({
                 content: success.render({
-                    total: basketModel.getTotal()
+                    total: orderData.total
                 })
             });
         })
@@ -212,6 +208,7 @@ events.on('formErrors:change', (errors: Partial<IOrderForm>) => {
 events.on(/^order\..*:change/, (data: { field: keyof IOrderForm, value: string }) => {
     userModel.setOrderField(data.field, data.value);
 });
+
 // Изменилось одно из полей в модальном окне контактов
 events.on(/^contacts\..*:change/, (data: { field: keyof IOrderForm, value: string }) => {
     userModel.setContactsField(data.field, data.value);
@@ -225,6 +222,8 @@ events.on('modal:open', () => {
 // ... и разблокируем
 events.on('modal:close', () => {
     page.locked = false;
+    order.unpushButtons();
+    userModel.clearForm()
 });
 
 // Получаем карточки с сервера

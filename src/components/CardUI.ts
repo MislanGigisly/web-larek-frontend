@@ -54,10 +54,6 @@ export class CardUI extends Component<ICard> {
         this.setText(this._title, value);
     }
 
-    get title(): string {
-        return this._title.textContent || '';
-    }
-
     set image(value: string) {
         if (this._image) {
         this.setImage(this._image, value, this.title)

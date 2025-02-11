@@ -66,7 +66,9 @@ export class UserData extends Model<IOrderForm>  {
 
     setOrderField(field: keyof IOrderForm, value: string): void {
         this[field] = value;
-
+        if (field == 'payment'){
+            this.events.emit("userData.payment:changed", {payment:value})
+        }
         if (this.isValidOrder()) {
             this.events.emit('order:ready', this.getOrderData());
         }
